@@ -3,19 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Home Workout - Female Plan</title>
+    <title>Home Workout & Nutrition - Female Plan</title>
     
-    <link rel="icon" type="image/jpeg" href="icon.jpg?v=1">
-    <link rel="apple-touch-icon" href="icon.jpg?v=1">
+    <link rel="icon" type="image/jpeg" href="icon.jpg?v=2">
+    <link rel="apple-touch-icon" href="icon.jpg?v=2">
 
     <style>
         :root {
             --bg-color: #121212;
             --card-bg: #1e1e1e;
-            --accent: #e91e63; /* Tông màu hồng quyến rũ/nữ tính */
+            --accent: #e91e63;
+            --accent-hover: #c2185b;
             --text-primary: #ffffff;
             --text-secondary: #b0b0b0;
             --success: #4caf50;
+            --info: #2196f3;
+            --warning: #ff9800;
         }
 
         * { box-sizing: border-box; }
@@ -35,6 +38,29 @@
             color: var(--accent);
             margin-top: 8px;
             margin-bottom: 14px;
+        }
+
+        .tab-nav {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            background: var(--card-bg);
+            border: 1px solid #333;
+            color: var(--text-secondary);
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-align: center;
+        }
+        .tab-btn.active {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
         }
 
         .day-selector {
@@ -69,7 +95,7 @@
         .day-btn .day-title { font-size: 0.75rem; display: block; }
         .day-btn .day-date { font-size: 0.9rem; font-weight: bold; }
 
-        .exercise-card {
+        .exercise-card, .nutrition-card {
             background: var(--card-bg);
             border-radius: 12px;
             padding: 12px;
@@ -123,14 +149,17 @@
             width: 45px;
             flex-shrink: 0;
         }
-        input[type="number"] {
+        input[type="number"], input[type="text"], select {
             background: #2a2a2a;
             border: 1px solid #444;
             color: #fff;
-            padding: 8px 4px;
+            padding: 8px;
             border-radius: 6px;
-            text-align: center;
             font-size: 0.85rem;
+            outline: none;
+        }
+        input[type="number"] {
+            text-align: center;
             flex: 1;
             min-width: 0;
             -webkit-appearance: none;
@@ -150,6 +179,65 @@
             flex-shrink: 0;
         }
         .check-btn.done { background: var(--success); }
+
+        /* MACRO SUMMARY BOX */
+        .macro-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+            background: #282828;
+            padding: 10px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 12px;
+        }
+        .macro-item span { display: block; font-size: 0.7rem; color: var(--text-secondary); }
+        .macro-item b { font-size: 0.95rem; }
+
+        .food-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 12px;
+            background: #252525;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .food-row-flex {
+            display: flex;
+            gap: 6px;
+        }
+        .action-btn {
+            background: var(--accent);
+            border: none;
+            color: #fff;
+            font-weight: bold;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .food-log-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #2a2a2a;
+            padding: 8px 10px;
+            border-radius: 6px;
+            margin-bottom: 6px;
+            font-size: 0.82rem;
+        }
+        .food-log-info { flex: 1; }
+        .food-log-del {
+            background: none;
+            border: none;
+            color: #ff5252;
+            cursor: pointer;
+            font-weight: bold;
+            padding: 0 6px;
+            font-size: 1rem;
+        }
 
         .notes-box {
             background: #281a24;
@@ -321,26 +409,116 @@
 </head>
 <body>
 
-    <h1>Lịch Tập Tại Nhà (Nữ)</h1>
+    <h1>Home Workout & Nutrition</h1>
 
-    <div class="day-selector" id="daySelector"></div>
-    <div id="workoutContainer"></div>
-
-    <div class="notes-box">
-        <strong>Lưu ý cho Chị Em:</strong>
-        <ul style="padding-left: 18px; margin: 6px 0 0 0;">
-            <li>Nghỉ giữa các hiệp: 45 - 60 giây.</li>
-            <li>Chọn mức tạ vừa sức để thực hiện chuẩn form (2-5kg tùy bài).</li>
-            <li>Luôn gồng chặt cơ bụng khi thực hiện các bài tập.</li>
-        </ul>
+    <!-- CHUYỂN TAB TẬP LUYỆN / DINH DƯỠNG -->
+    <div class="tab-nav">
+        <button class="tab-btn active" id="tabWorkoutBtn" onclick="switchTab('workout')">🏋️ Lịch Tập</button>
+        <button class="tab-btn" id="tabNutritionBtn" onclick="switchTab('nutrition')">🥗 Nhật Ký Ăn Uống</button>
     </div>
 
+    <div class="day-selector" id="daySelector"></div>
+
+    <!-- KHUNG LỊCH TẬP -->
+    <div id="workoutTabContent">
+        <div id="workoutContainer"></div>
+        <div class="notes-box">
+            <strong>Lưu ý tập luyện:</strong>
+            <ul style="padding-left: 18px; margin: 6px 0 0 0;">
+                <li>Nghỉ giữa các hiệp: 45 - 60 giây.</li>
+                <li>Chọn mức tạ vừa sức để thực hiện chuẩn form (2-5kg tùy bài).</li>
+                <li>Luôn gồng chặt cơ bụng khi thực hiện các bài tập.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- KHUNG MEAL PLAN DINH DƯỠNG -->
+    <div id="nutritionTabContent" style="display: none;">
+        <div class="nutrition-card">
+            <h3 style="color: var(--accent); margin-top: 0; font-size: 1.05rem;" id="nutritionDayTitle">Tổng Nhập Dinh Dưỡng</h3>
+
+            <!-- THANH TỔNG MACRO TRONG NGÀY -->
+            <div class="macro-grid">
+                <div class="macro-item">
+                    <span>Calo</span>
+                    <b id="totalCalories" style="color: var(--warning);">0</b> <small style="font-size: 0.65rem;">kcal</small>
+                </div>
+                <div class="macro-item">
+                    <span>Đạm (P)</span>
+                    <b id="totalProtein" style="color: var(--success);">0</b> <small style="font-size: 0.65rem;">g</small>
+                </div>
+                <div class="macro-item">
+                    <span>Tinh bột (C)</span>
+                    <b id="totalCarb" style="color: var(--info);">0</b> <small style="font-size: 0.65rem;">g</small>
+                </div>
+                <div class="macro-item">
+                    <span>Chất béo (F)</span>
+                    <b id="totalFat" style="color: var(--accent);">0</b> <small style="font-size: 0.65rem;">g</small>
+                </div>
+            </div>
+
+            <!-- BẢNG NHẬP THỰC PHẨM THÔ/NGUYÊN LIỆU -->
+            <div class="food-input-group">
+                <label style="font-size: 0.8rem; color: var(--text-secondary);">Thêm nguyên liệu / thực phẩm:</label>
+                <select id="foodSelect" onchange="handleFoodSelectChange()" style="width: 100%;">
+                    <option value="">-- Chọn nguyên liệu thô --</option>
+                    <optgroup label="🥩 Đạm (Protein)">
+                        <option value="chicken_breast">Ức gà sống (100g)</option>
+                        <option value="shrimp">Tôm tươi sống (100g)</option>
+                        <option value="pork_lean">Thịt heo nạc / Thăn (100g)</option>
+                        <option value="beef_lean">Thịt bò nạc (100g)</option>
+                        <option value="egg">Trứng gà (1 quả - ~50g)</option>
+                        <option value="egg_white">Lòng trắng trứng (1 quả - ~30g)</option>
+                        <option value="tofu">Đậu hũ trắng (100g)</option>
+                        <option value="whey">Whey Protein (1 muỗng - 30g)</option>
+                    </optgroup>
+                    <optgroup label="🍚 Tinh bột (Carb)">
+                        <option value="rice_raw">Gạo trắng sống (100g)</option>
+                        <option value="rice_cooked">Cơm trắng chín (100g)</option>
+                        <option value="sweet_potato">Khoai lang tươi (100g)</option>
+                        <option value="oats">Yến mạch thô (100g)</option>
+                        <option value="bread_whole">Bánh mì đen / Nguyên cám (1 lát - 30g)</option>
+                    </optgroup>
+                    <optgroup label="🥑 Chất béo & Khác">
+                        <option value="cooking_oil">Dầu ăn / Dầu olive (1 muỗng canh - 10g)</option>
+                        <option value="butter">Bơ thực vật / Bơ động vật (10g)</option>
+                        <option value="peanut">Lạc / Đậu phụng rang (100g)</option>
+                        <option value="milk">Sữa tươi không đường (100ml)</option>
+                    </optgroup>
+                    <option value="custom">✏️ Tự nhập món tùy chỉnh...</option>
+                </select>
+
+                <!-- KHUNG TỰ NHẬP NẾU MÓN KHÔNG CÓ TRONG CƠ SỞ DỮ LIỆU -->
+                <div id="customFoodInputs" style="display: none; flex-direction: column; gap: 6px;">
+                    <input type="text" id="customName" placeholder="Tên món / nguyên liệu">
+                    <div class="food-row-flex">
+                        <input type="number" id="customCal" placeholder="Calo">
+                        <input type="number" id="customP" placeholder="P (g)">
+                        <input type="number" id="customC" placeholder="C (g)">
+                        <input type="number" id="customF" placeholder="F (g)">
+                    </div>
+                </div>
+
+                <div class="food-row-flex">
+                    <input type="number" id="foodGram" placeholder="Nhập Gram / Số lượng" style="flex: 2;">
+                    <button class="action-btn" onclick="addFoodToMeal()" style="flex: 1;">+ Thêm</button>
+                </div>
+            </div>
+
+            <!-- DANH SÁCH MÓN ĂN ĐÃ NHẬP TRONG NGÀY -->
+            <div style="font-weight: bold; font-size: 0.85rem; margin-bottom: 8px; color: var(--text-secondary);">Danh sách món ăn hôm nay:</div>
+            <div id="mealList"></div>
+        </div>
+    </div>
+
+    <!-- THANH NÚT HỎI ĐÁP CỐ ĐỊNH DƯỚI ĐÁY -->
     <div class="bottom-bar">
         <button class="ai-chat-trigger-btn" onclick="showChatModal()">
             ✨ Hỏi đáp HLV AI
         </button>
     </div>
 
+    <!-- CỬA SỔ HỎI ĐÁP CHATBOX -->
     <div class="chat-modal" id="chatModal">
         <div class="chat-container">
             <div class="chat-header">
@@ -365,6 +543,27 @@
     </div>
 
     <script>
+        // CƠ SỞ DỮ LIỆU MACRO NGUYÊN LIỆU THÔ / THỰC PHẨM (Tính chuẩn trên 100g hoặc 1 đơn vị)
+        const RAW_FOOD_DB = {
+            "chicken_breast": { name: "Ức gà sống", unit: "g", cal: 110, p: 23, c: 0, f: 1.2 },
+            "shrimp": { name: "Tôm tươi sống", unit: "g", cal: 85, p: 20, c: 0.2, f: 0.5 },
+            "pork_lean": { name: "Thịt heo nạc", unit: "g", cal: 140, p: 21, c: 0, f: 6 },
+            "beef_lean": { name: "Thịt bò nạc", unit: "g", cal: 130, p: 22, c: 0, f: 4.5 },
+            "egg": { name: "Trứng gà", unit: "quả", cal: 72, p: 6.3, c: 0.4, f: 4.8 },
+            "egg_white": { name: "Lòng trắng trứng", unit: "quả", cal: 17, p: 3.6, c: 0.2, f: 0.1 },
+            "tofu": { name: "Đậu hũ trắng", unit: "g", cal: 76, p: 8, c: 1.9, f: 4.8 },
+            "whey": { name: "Whey Protein", unit: "muỗng", cal: 120, p: 25, c: 1.5, f: 1 },
+            "rice_raw": { name: "Gạo trắng sống", unit: "g", cal: 360, p: 6.5, c: 78, f: 0.6 },
+            "rice_cooked": { name: "Cơm trắng chín", unit: "g", cal: 130, p: 2.7, c: 28, f: 0.3 },
+            "sweet_potato": { name: "Khoai lang tươi", unit: "g", cal: 86, p: 1.6, c: 20, f: 0.1 },
+            "oats": { name: "Yến mạch thô", unit: "g", cal: 389, p: 16.9, c: 66, f: 6.9 },
+            "bread_whole": { name: "Bánh mì nguyên cám", unit: "lát", cal: 80, p: 4, c: 13, f: 1 },
+            "cooking_oil": { name: "Dầu ăn / Olive", unit: "muỗng", cal: 88, p: 0, c: 0, f: 10 },
+            "butter": { name: "Bơ", unit: "g", cal: 72, p: 0.1, c: 0.1, f: 8.1 },
+            "peanut": { name: "Lạc / Đậu phụng", unit: "g", cal: 567, p: 25.8, c: 16, f: 49 },
+            "milk": { name: "Sữa tươi không đường", unit: "ml", cal: 62, p: 3.2, c: 4.8, f: 3.5 }
+        };
+
         const FP_GIFS = {
             "Dumbbell Goblet Squat": "https://fitnessprogramer.com/wp-content/uploads/2021/02/Dumbbell-Goblet-Squat.gif",
             "Band Incline Monster Walk": "https://fitnessprogramer.com/wp-content/uploads/2021/06/Resistance-Band-Lateral-Walk.gif",
@@ -466,6 +665,7 @@
 
         let calendarList = [];
         let selectedDateStr = "";
+        let currentTab = "workout";
 
         function formatDateKey(dateObj) {
             const y = dateObj.getFullYear();
@@ -504,6 +704,22 @@
             selectedDateStr = hasToday ? todayKey : calendarList[0].dateKey;
         }
 
+        function switchTab(tabName) {
+            currentTab = tabName;
+            document.getElementById("tabWorkoutBtn").className = `tab-btn ${tabName === 'workout' ? 'active' : ''}`;
+            document.getElementById("tabNutritionBtn").className = `tab-btn ${tabName === 'nutrition' ? 'active' : ''}`;
+
+            if (tabName === 'workout') {
+                document.getElementById("workoutTabContent").style.display = "block";
+                document.getElementById("nutritionTabContent").style.display = "none";
+                renderWorkout(selectedDateStr);
+            } else {
+                document.getElementById("workoutTabContent").style.display = "none";
+                document.getElementById("nutritionTabContent").style.display = "block";
+                renderNutrition(selectedDateStr);
+            }
+        }
+
         function renderDaySelector() {
             const container = document.getElementById("daySelector");
             if (!container) return;
@@ -520,7 +736,11 @@
                 btn.onclick = () => {
                     selectedDateStr = item.dateKey;
                     renderDaySelector();
-                    renderWorkout(selectedDateStr);
+                    if (currentTab === 'workout') {
+                        renderWorkout(selectedDateStr);
+                    } else {
+                        renderNutrition(selectedDateStr);
+                    }
                     scrollToActiveBtn();
                 };
                 container.appendChild(btn);
@@ -636,6 +856,141 @@
             }));
         }
 
+        /* --- XỬ LÝ NHẬT KÝ DINH DƯỠNG (MEAL PLAN) --- */
+        function handleFoodSelectChange() {
+            const val = document.getElementById("foodSelect").value;
+            const customBox = document.getElementById("customFoodInputs");
+            if (val === "custom") {
+                customBox.style.display = "flex";
+            } else {
+                customBox.style.display = "none";
+            }
+        }
+
+        function getSavedMeals(dateKey) {
+            try {
+                const key = `fem_meal_${dateKey}`;
+                const data = localStorage.getItem(key);
+                return data ? JSON.parse(data) : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function saveMeals(dateKey, mealsList) {
+            const key = `fem_meal_${dateKey}`;
+            localStorage.setItem(key, JSON.stringify(mealsList));
+        }
+
+        function addFoodToMeal() {
+            const foodKey = document.getElementById("foodSelect").value;
+            const amount = parseFloat(document.getElementById("foodGram").value);
+
+            if (!foodKey) {
+                alert("Vui lòng chọn thực phẩm hoặc tùy chọn nhập món!");
+                return;
+            }
+            if (!amount || amount <= 0) {
+                alert("Vui lòng nhập số gram / lượng nguyên liệu!");
+                return;
+            }
+
+            let foodItem = null;
+
+            if (foodKey === "custom") {
+                const name = document.getElementById("customName").value.trim() || "Món tự nhập";
+                const cal = parseFloat(document.getElementById("customCal").value) || 0;
+                const p = parseFloat(document.getElementById("customP").value) || 0;
+                const c = parseFloat(document.getElementById("customC").value) || 0;
+                const f = parseFloat(document.getElementById("customF").value) || 0;
+
+                foodItem = {
+                    id: Date.now(),
+                    name: `${name} (${amount}g)`,
+                    cal: Math.round(cal * (amount / 100)),
+                    p: Math.round(p * (amount / 100) * 10) / 10,
+                    c: Math.round(c * (amount / 100) * 10) / 10,
+                    f: Math.round(f * (amount / 100) * 10) / 10
+                };
+            } else {
+                const dbInfo = RAW_FOOD_DB[foodKey];
+                const ratio = (dbInfo.unit === "g" || dbInfo.unit === "ml") ? (amount / 100) : amount;
+
+                foodItem = {
+                    id: Date.now(),
+                    name: `${dbInfo.name} (${amount}${dbInfo.unit})`,
+                    cal: Math.round(dbInfo.cal * ratio),
+                    p: Math.round(dbInfo.p * ratio * 10) / 10,
+                    c: Math.round(dbInfo.c * ratio * 10) / 10,
+                    f: Math.round(dbInfo.f * ratio * 10) / 10
+                };
+            }
+
+            const currentMeals = getSavedMeals(selectedDateStr);
+            currentMeals.push(foodItem);
+            saveMeals(selectedDateStr, currentMeals);
+
+            // Reset Form Input
+            document.getElementById("foodGram").value = "";
+            document.getElementById("customName").value = "";
+            document.getElementById("customCal").value = "";
+            document.getElementById("customP").value = "";
+            document.getElementById("customC").value = "";
+            document.getElementById("customF").value = "";
+
+            renderNutrition(selectedDateStr);
+        }
+
+        function deleteMealItem(itemId) {
+            let currentMeals = getSavedMeals(selectedDateStr);
+            currentMeals = currentMeals.filter(m => m.id !== itemId);
+            saveMeals(selectedDateStr, currentMeals);
+            renderNutrition(selectedDateStr);
+        }
+
+        function renderNutrition(dateKey) {
+            const dayInfo = calendarList.find(item => item.dateKey === dateKey);
+            if (dayInfo) {
+                document.getElementById("nutritionDayTitle").innerText = `Nhật Ký Ăn Uống: ${dayInfo.shortDay}, ${dayInfo.shortDate}`;
+            }
+
+            const meals = getSavedMeals(dateKey);
+            const container = document.getElementById("mealList");
+            container.innerHTML = "";
+
+            let totalCal = 0, totalP = 0, totalC = 0, totalF = 0;
+
+            if (meals.length === 0) {
+                container.innerHTML = `<div style="text-align: center; color: var(--text-secondary); font-size: 0.8rem; padding: 16px;">Chưa có thực phẩm nào được thêm cho ngày này.</div>`;
+            } else {
+                meals.forEach(item => {
+                    totalCal += item.cal;
+                    totalP += item.p;
+                    totalC += item.c;
+                    totalF += item.f;
+
+                    const div = document.createElement("div");
+                    div.className = "food-log-item";
+                    div.innerHTML = `
+                        <div class="food-log-info">
+                            <b style="color: #fff;">${item.name}</b>
+                            <div style="color: var(--text-secondary); font-size: 0.75rem; margin-top: 2px;">
+                                ${item.cal} kcal | P: ${item.p}g | C: ${item.c}g | F: ${item.f}g
+                            </div>
+                        </div>
+                        <button class="food-log-del" onclick="deleteMealItem(${item.id})">✕</button>
+                    `;
+                    container.appendChild(div);
+                });
+            }
+
+            document.getElementById("totalCalories").innerText = Math.round(totalCal);
+            document.getElementById("totalProtein").innerText = Math.round(totalP * 10) / 10;
+            document.getElementById("totalCarb").innerText = Math.round(totalC * 10) / 10;
+            document.getElementById("totalFat").innerText = Math.round(totalF * 10) / 10;
+        }
+
+        /* --- XỬ LÝ CHATBOX HỎI ĐÁP AI --- */
         function showChatModal() {
             var modal = document.getElementById("chatModal");
             if (modal) {
